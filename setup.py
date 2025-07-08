@@ -2,6 +2,7 @@ import sys
 import asyncio
 from pathlib import Path
 import shutil
+from setuptools import setup, find_packages
 
 
 DATA_DIR = Path(__file__).parent / "data"
@@ -48,9 +49,43 @@ def setup():
     # setup
     create_dirs()
     cleanup_dirs()
-    print("Setup complete.")
+
+
+# PyPI package configuration
+setup(
+    name="kestra-bot-demo",
+    version="0.1.0",
+    description="A Textual terminal application for building Kestra ETL Flows using OpenAI agents",
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
+    author="Parham Parvizi",
+    author_email="parham.parvizi@gmail.com",
+    packages=find_packages(),
+    install_requires=[
+        "textual>=0.40.0",
+    ],
+    entry_points={
+        "console_scripts": [
+            "kestra-bot=kestra_demo.app:main",
+        ],
+    },
+    python_requires=">=3.8",
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Environment :: Console",
+        "Topic :: Software Development :: Libraries :: Application Frameworks",
+        "Topic :: System :: System Shells",
+    ],
+)
 
 
 if __name__ == "__main__":
     setup()
-    
