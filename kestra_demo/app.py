@@ -58,12 +58,18 @@ class PromptTab(TabPane):
         super().__init__(title, id=id)
     
     def compose(self) -> ComposeResult:
-        textarea = TextArea(
+        text = "Enter your prompt here. Describe what you want the Kestra Bot to do."
+        # Create a TextArea for user input
+        textarea = TextArea.code_editor(
+            text,
             language="markdown",
             id="prompt-textarea",
-            classes="tab-textarea"
+            classes="tab-textarea",
+            theme="dracula",
+            tab_behavior="indent",
         )
-        textarea.text = "Describe what you like me to do like a human!"
+        textarea.indent_type = "spaces"
+        textarea.show_line_numbers = True
         yield textarea
     
     def on_text_area_changed(self, event: TextArea.Changed) -> None:
@@ -190,85 +196,85 @@ class SettingsTab(TabPane):
 class KestraBotApp(App):
     """Main Kestra Bot Demo application."""
     
-    CSS = """
-    /* Tokyo Night Theme Colors */
-    Screen {
-        background: #16161e;
-        color: #c0caf5;
-    }
+    # CSS = """
+    # /* Tokyo Night Theme Colors */
+    # Screen {
+    #     background: #16161e;
+    #     color: #c0caf5;
+    # }
     
-    #header-content {
-        background: #1a1b26;
-        color: #c0caf5;
-        padding: 1 2;
-        text-align: center;
-        border-bottom: heavy #7aa2f7;
-    }
+    # #header-content {
+    #     background: #1a1b26;
+    #     color: #c0caf5;
+    #     padding: 1 2;
+    #     text-align: center;
+    #     border-bottom: heavy #7aa2f7;
+    # }
     
-    TabbedContent {
-        background: #1a1b26;
-        border: heavy #7aa2f7;
-    }
+    # TabbedContent {
+    #     background: #1a1b26;
+    #     border: heavy #7aa2f7;
+    # }
     
-    TabPane {
-        background: #16161e;
-        padding: 1;
-    }
+    # TabPane {
+    #     background: #16161e;
+    #     padding: 1;
+    # }
     
-    .tab-textarea {
-        background: #1a1b26;
-        border: heavy #bb9af7;
-        color: #c0caf5;
-        height: 100%;
-    }
+    # .tab-textarea {
+    #     background: #1a1b26;
+    #     border: heavy #bb9af7;
+    #     color: #c0caf5;
+    #     height: 100%;
+    # }
     
-    .settings-textarea {
-        background: #1a1b26;
-        border: heavy #bb9af7;
-        color: #c0caf5;
-        height: 10;
-    }
+    # .settings-textarea {
+    #     background: #1a1b26;
+    #     border: heavy #bb9af7;
+    #     color: #c0caf5;
+    #     height: 10;
+    # }
     
-    .section-title {
-        background: #7aa2f7;
-        color: #16161e;
-        padding: 0 1;
-        margin: 1 0;
-        text-style: bold;
-    }
+    # .section-title {
+    #     background: #7aa2f7;
+    #     color: #16161e;
+    #     padding: 0 1;
+    #     margin: 1 0;
+    #     text-style: bold;
+    # }
     
-    #status-label {
-        background: #1a1b26;
-        color: #e0af68;
-        padding: 0 2;
-        text-align: center;
-        border-top: heavy #7aa2f7;
-    }
+    # #status-label {
+    #     background: #1a1b26;
+    #     color: #e0af68;
+    #     padding: 0 2;
+    #     text-align: center;
+    #     border-top: heavy #7aa2f7;
+    # }
     
-    .console-log {
-        background: #16161e;
-        border: heavy #9ece6a;
-        height: 20;
-    }
+    # .console-log {
+    #     background: #16161e;
+    #     border: heavy #9ece6a;
+    #     height: 20;
+    # }
     
-    .execution-content {
-        background: #1a1b26;
-        padding: 1;
-        color: #c0caf5;
-    }
+    # .execution-content {
+    #     background: #1a1b26;
+    #     padding: 1;
+    #     color: #c0caf5;
+    # }
     
-    #execution-history {
-        background: #16161e;
-        border: heavy #e0af68;
-        max-height: 15;
-        overflow-y: auto;
-    }
+    # #execution-history {
+    #     background: #16161e;
+    #     border: heavy #e0af68;
+    #     max-height: 15;
+    #     overflow-y: auto;
+    # }
     
-    Footer {
-        background: #1a1b26;
-        border-top: heavy #7aa2f7;
-    }
-    """
+    # Footer {
+    #     background: #1a1b26;
+    #     border-top: heavy #7aa2f7;
+    # }
+    # """
     
     BINDINGS = [
         Binding("ctrl+q", "quit", "Quit", priority=True),
