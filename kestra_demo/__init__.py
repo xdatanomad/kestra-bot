@@ -8,6 +8,6 @@ __version__ = "0.1.0"
 __author__ = "Parham Parvizi"
 __email__ = "parham.parvizi@gmail.com"
 
-from .app import KestraBotApp, main
+from .app import KestralBotApp, main
 
-__all__ = ["KestraBotApp", "main"]
+__all__ = ["KestralBotApp", "main"]

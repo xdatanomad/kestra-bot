@@ -17,7 +17,7 @@ from typing import Any
 import asyncio
 
 
-class KestraBotHeader(Static):
+class KestralBotHeader(Static):
     """Custom header widget for the Kestra Bot Demo application."""
     
     def compose(self) -> ComposeResult:
@@ -35,11 +35,16 @@ class StatusBar(Static):
     status_message = reactive("Ready")
     
     def compose(self) -> ComposeResult:
-        yield Label(self.status_message, id="status-label")
+        yield Label(f"Status: {self.status_message}", id="status-label")
     
     def watch_status_message(self, message: str) -> None:
         """Update status message when it changes."""
-        self.query_one("#status-label", Label).update(f"Status: {message}")
+        try:
+            label = self.query_one("#status-label", Label)
+            label.update(f"Status: {message}")
+        except:
+            # Label not yet mounted, ignore
+            pass
     
     async def update_status(self, message: str) -> None:
         """Async method to update status message."""
@@ -53,12 +58,13 @@ class PromptTab(TabPane):
         super().__init__(title, id=id)
     
     def compose(self) -> ComposeResult:
-        yield TextArea(
-            placeholder="Describe what you like me to do like a human!",
+        textarea = TextArea(
             language="markdown",
             id="prompt-textarea",
             classes="tab-textarea"
         )
+        textarea.text = "Describe what you like me to do like a human!"
+        yield textarea
     
     def on_text_area_changed(self, event: TextArea.Changed) -> None:
         """Handle prompt text area changes."""
@@ -74,12 +80,13 @@ class MetadataTab(TabPane):
         super().__init__(title, id=id)
     
     def compose(self) -> ComposeResult:
-        yield TextArea(
-            placeholder="Enter metadata information (table schema, data definitions, credentials, etc.)",
+        textarea = TextArea(
             language="markdown",
             id="metadata-textarea",
             classes="tab-textarea"
         )
+        textarea.text = "Enter metadata information (table schema, data definitions, credentials, etc.)"
+        yield textarea
     
     def on_text_area_changed(self, event: TextArea.Changed) -> None:
         """Handle metadata text area changes."""
@@ -88,19 +95,20 @@ class MetadataTab(TabPane):
             pass
 
 
-class KestraFlowTab(TabPane):
+class KestralFlowTab(TabPane):
     """Tab for Kestra Flow YAML display/editing."""
     
     def __init__(self, title: str, id: str | None = None):
         super().__init__(title, id=id)
     
     def compose(self) -> ComposeResult:
-        yield TextArea(
-            placeholder="Generated Kestra Flow YAML will appear here...",
+        textarea = TextArea(
             language="yaml",
             id="flow-textarea",
             classes="tab-textarea"
         )
+        textarea.text = "Generated Kestra Flow YAML will appear here..."
+        yield textarea
     
     def on_text_area_changed(self, event: TextArea.Changed) -> None:
         """Handle flow YAML text area changes."""
@@ -151,12 +159,13 @@ class SettingsTab(TabPane):
     def compose(self) -> ComposeResult:
         with Vertical():
             yield Label("Developer Prompt", classes="section-title")
-            yield TextArea(
-                placeholder="OpenAI developer prompt configuration...",
+            dev_prompt_textarea = TextArea(
                 language="markdown",
                 id="dev-prompt-textarea",
                 classes="settings-textarea"
             )
+            dev_prompt_textarea.text = "OpenAI developer prompt configuration..."
+            yield dev_prompt_textarea
             
             yield Label("OpenAI Model Selection", classes="section-title")
             yield Select(
@@ -178,97 +187,86 @@ class SettingsTab(TabPane):
             pass
 
 
-class KestraBotApp(App):
+class KestralBotApp(App):
     """Main Kestra Bot Demo application."""
     
     CSS = """
     /* Tokyo Night Theme Colors */
-    :root {
-        --primary: #7aa2f7;
-        --secondary: #bb9af7;
-        --success: #9ece6a;
-        --warning: #e0af68;
-        --error: #f7768e;
-        --surface: #1a1b26;
-        --background: #16161e;
-        --foreground: #c0caf5;
-    }
-    
     Screen {
-        background: $background;
-        color: $foreground;
+        background: #16161e;
+        color: #c0caf5;
     }
     
     #header-content {
-        background: $surface;
-        color: $foreground;
+        background: #1a1b26;
+        color: #c0caf5;
         padding: 1 2;
         text-align: center;
-        border-bottom: heavy $primary;
+        border-bottom: heavy #7aa2f7;
     }
     
     TabbedContent {
-        background: $surface;
-        border: heavy $primary;
+        background: #1a1b26;
+        border: heavy #7aa2f7;
     }
     
     TabPane {
-        background: $background;
+        background: #16161e;
         padding: 1;
     }
     
     .tab-textarea {
-        background: $surface;
-        border: heavy $secondary;
-        color: $foreground;
+        background: #1a1b26;
+        border: heavy #bb9af7;
+        color: #c0caf5;
         height: 100%;
     }
     
     .settings-textarea {
-        background: $surface;
-        border: heavy $secondary;
-        color: $foreground;
+        background: #1a1b26;
+        border: heavy #bb9af7;
+        color: #c0caf5;
         height: 10;
     }
     
     .section-title {
-        background: $primary;
-        color: $background;
+        background: #7aa2f7;
+        color: #16161e;
         padding: 0 1;
         margin: 1 0;
         text-style: bold;
     }
     
     #status-label {
-        background: $surface;
-        color: $warning;
+        background: #1a1b26;
+        color: #e0af68;
         padding: 0 2;
         text-align: center;
-        border-top: heavy $primary;
+        border-top: heavy #7aa2f7;
     }
     
     .console-log {
-        background: $background;
-        border: heavy $success;
+        background: #16161e;
+        border: heavy #9ece6a;
         height: 20;
     }
     
     .execution-content {
-        background: $surface;
+        background: #1a1b26;
         padding: 1;
-        color: $foreground;
+        color: #c0caf5;
     }
     
     #execution-history {
-        background: $background;
-        border: heavy $warning;
+        background: #16161e;
+        border: heavy #e0af68;
         max-height: 15;
         overflow-y: auto;
     }
     
     Footer {
-        background: $surface;
-        border-top: heavy $primary;
+        background: #1a1b26;
+        border-top: heavy #7aa2f7;
     }
     """
     
@@ -291,12 +289,12 @@ class KestraBotApp(App):
     
     def compose(self) -> ComposeResult:
         """Compose the application layout."""
-        yield KestraBotHeader()
+        yield KestralBotHeader()
         
         with TabbedContent(initial="prompt"):
             yield PromptTab("Prompt", id="prompt")
             yield MetadataTab("Metadata", id="metadata")
-            yield KestraFlowTab("Kestra Flow", id="flow")
+            yield KestralFlowTab("Kestra Flow", id="flow")
             yield ExecutionLogsTab("Execution Logs", id="logs")
             yield SettingsTab("Settings", id="settings")
         
@@ -375,7 +373,7 @@ class KestraBotApp(App):
 
 def main():
     """Main entry point for the application."""
-    app = KestraBotApp()
+    app = KestralBotApp()
     app.run()
 
 
