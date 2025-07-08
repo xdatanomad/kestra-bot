@@ -17,7 +17,7 @@ from typing import Any
 import asyncio
 
 
-class KestralBotHeader(Static):
+class KestraBotHeader(Static):
     """Custom header widget for the Kestra Bot Demo application."""
     
     def compose(self) -> ComposeResult:
@@ -95,7 +95,7 @@ class MetadataTab(TabPane):
             pass
 
 
-class KestralFlowTab(TabPane):
+class KestraFlowTab(TabPane):
     """Tab for Kestra Flow YAML display/editing."""
     
     def __init__(self, title: str, id: str | None = None):
@@ -187,7 +187,7 @@ class SettingsTab(TabPane):
             pass
 
 
-class KestralBotApp(App):
+class KestraBotApp(App):
     """Main Kestra Bot Demo application."""
     
     CSS = """
@@ -289,12 +289,12 @@ class KestralBotApp(App):
     
     def compose(self) -> ComposeResult:
         """Compose the application layout."""
-        yield KestralBotHeader()
+        yield KestraBotHeader()
         
         with TabbedContent(initial="prompt"):
             yield PromptTab("Prompt", id="prompt")
             yield MetadataTab("Metadata", id="metadata")
-            yield KestralFlowTab("Kestra Flow", id="flow")
+            yield KestraFlowTab("Kestra Flow", id="flow")
             yield ExecutionLogsTab("Execution Logs", id="logs")
             yield SettingsTab("Settings", id="settings")
         
@@ -371,11 +371,11 @@ class KestralBotApp(App):
         self.exit()
 
 
-def main():
+def run_app():
     """Main entry point for the application."""
-    app = KestralBotApp()
+    app = KestraBotApp()
     app.run()
 
 
 if __name__ == "__main__":
-    main()
+    run_app()
