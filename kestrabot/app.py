@@ -7,13 +7,13 @@ from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical, VerticalScroll
 from textual.widgets import (
     Header, Footer, TabbedContent, TabPane, TextArea, Label, 
-    Static, Log, Collapsible, SelectionList, Select
+    Static, Log, Collapsible, SelectionList, Select, MarkdownViewer
 )
 from textual.binding import Binding
 from textual.reactive import reactive
 from textual.message import Message
-from textual import events
-from typing import Any
+from textual import events, on
+from typing import Any, Optional
 import asyncio
 import logging
 
@@ -98,12 +98,6 @@ class PromptTab(TabPane):
         textarea.indent_type = "spaces"
         textarea.show_line_numbers = False
         yield textarea
-    
-    def on_text_area_changed(self, event: TextArea.Changed) -> None:
-        """Handle prompt text area changes."""
-        if event.text_area.id == "prompt-textarea":
-            # Placeholder for prompt change handling
-            pass
 
 
 class MetadataTab(TabPane):
@@ -120,12 +114,6 @@ class MetadataTab(TabPane):
         )
         textarea.text = "Enter metadata information (table schema, data definitions, credentials, etc.)"
         yield textarea
-    
-    def on_text_area_changed(self, event: TextArea.Changed) -> None:
-        """Handle metadata text area changes."""
-        if event.text_area.id == "metadata-textarea":
-            # Placeholder for metadata change handling
-            pass
 
 
 class KestraFlowTab(TabPane):
@@ -142,12 +130,6 @@ class KestraFlowTab(TabPane):
         )
         textarea.text = "Generated Kestra Flow YAML will appear here..."
         yield textarea
-    
-    def on_text_area_changed(self, event: TextArea.Changed) -> None:
-        """Handle flow YAML text area changes."""
-        if event.text_area.id == "flow-textarea":
-            # Placeholder for flow YAML change handling
-            pass
 
 
 class ExecutionLogsTab(TabPane):
@@ -160,14 +142,14 @@ class ExecutionLogsTab(TabPane):
         with Horizontal():
             # Collapsible sections for execution history
             with Container(id="execution-history-container"):
-                yield Label("Execution History", classes="section-title")
+                yield Label("Execution History", classes="label")
                 yield VerticalScroll(id="execution-history-scroll")
                 # Placeholder collapsible sections will be added dynamically
             
             # Scrollable log area
             with Container(id="console-log-container"):
-                yield Label("Console Logs", classes="section-title")
-                yield Log(id="console-log", classes="console-log", max_lines=200)
+                yield Label("Console Logs", classes="label")
+                yield Log(id="console-log", max_lines=500, highlight=True, auto_scroll=True)
     
     def add_execution_log(self, execution_id: str, content: str) -> None:
         """Add a new collapsible execution log section."""
@@ -193,7 +175,7 @@ class SettingsTab(TabPane):
     
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield Label("Developer Prompt", classes="section-title")
+            yield Label("Developer Prompt", classes="label")
             dev_prompt_textarea = TextArea(
                 language="markdown",
                 id="dev-prompt-textarea",
@@ -202,24 +184,26 @@ class SettingsTab(TabPane):
             dev_prompt_textarea.text = settings.developer_prompt or "Enter your developer prompt here. This will be used to guide generation of Kestra Flows.\n"
             yield dev_prompt_textarea
             
-            yield Label("OpenAI Model Selection", classes="section-title")
+            yield Label("OpenAI Model Selection", classes="label")
             yield Select(
                 [(model, model) for model in _MODELS_],
                 value=settings.openai_model,
                 id="model-select"
             )
     
-    def on_text_area_changed(self, event: TextArea.Changed) -> None:
+    @on(TextArea.Changed)
+    def on_text_area_changed(self, text_area: TextArea.Changed) -> None:
         """Handle settings text area changes."""
-        if event.text_area.id == "dev-prompt-textarea":
+        if text_area.text_area.id == "dev-prompt-textarea":
             # Placeholder for dev prompt change handling
-            pass
-    
+            set_status("WARNING - We do not currently support changing the prompt here. Please edit the settings.yaml file directly.")
+
+    @on(Select.Changed)
     def on_select_changed(self, event: Select.Changed) -> None:
         """Handle model selection changes."""
         if event.select.id == "model-select":
             # Placeholder for model selection change handling
-            pass
+            set_status("WARNING - We do not currently support changing the model here. Please edit the settings.yaml file directly.")
 
 
 class KestraBotApp(App):
@@ -236,6 +220,10 @@ class KestraBotApp(App):
     #status-label {
         height: 10%;
         padding: 0 2;
+        overflow: hidden hidden;
+        text-opacity: 90%;
+        text-wrap: wrap;
+        text-overflow: ellipsis; 
     }
 
     #main-tabs {
@@ -249,6 +237,11 @@ class KestraBotApp(App):
 
     #console-log-container {
         padding: 0 1;
+    }
+
+    .label {
+        padding: 1 1;
+        text-style: bold;
     }
     """
     
@@ -369,9 +362,8 @@ class KestraBotApp(App):
     async def action_execute_flow(self) -> None:
         """Handle Execute Flow action."""
         # Placeholder for execute flow functionality
-        status_bar = self.query_one(StatusBar)
-        await status_bar.update_status("Executing Kestra Flow...")
-        
+        await self.set_status("Executing Kestra Flow...")
+
         # Add console log
         logs_tab = self.query_one("#logs", ExecutionLogsTab)
         logging.info("Executing Kestra Flow...")
@@ -386,15 +378,30 @@ class KestraBotApp(App):
         )
         
         # Simulate some work
-        await status_bar.update_status("Flow execution completed")
+        await self.set_status("Flow execution completed")
     
     def action_quit(self) -> None:
         """Quit the application."""
         self.exit()
 
+    async def set_status(self, message: str) -> None:
+        """Set the status message in the application."""
+        status_bar = self.query_one(StatusBar)
+        await status_bar.update_status(message)
+
+
+app: Optional[KestraBotApp] = None
+
+
+def set_status(message: str) -> None:
+    """Set the status message in the application."""
+    global app
+    asyncio.create_task(app.set_status(message)) if app else None
+
 
 def run_app():
     """Main entry point for the application."""
+    global app
     app = KestraBotApp()
     app.run()
 
