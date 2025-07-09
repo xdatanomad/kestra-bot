@@ -96,7 +96,7 @@ class PromptTab(TabPane):
             tab_behavior="indent",
         )
         textarea.indent_type = "spaces"
-        textarea.show_line_numbers = True
+        textarea.show_line_numbers = False
         yield textarea
     
     def on_text_area_changed(self, event: TextArea.Changed) -> None:
