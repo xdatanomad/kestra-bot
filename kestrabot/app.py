@@ -375,6 +375,7 @@ class KestraBotApp(App):
         # Add console log
         logs_tab = self.query_one("#logs", ExecutionLogsTab)
         logging.info("Executing Kestra Flow...")
+        logging.debug("This is a debug message for flow execution")
         
         # Add execution log
         import time

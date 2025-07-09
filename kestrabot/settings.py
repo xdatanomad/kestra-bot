@@ -87,7 +87,7 @@ class Settings(BaseSettings):
             return "o4-mini"
         return value
     
-    def get_logging_level(self) -> int:
+    def get_logging_level(self):
         """
         Returns the logging level as an integer.
         """
