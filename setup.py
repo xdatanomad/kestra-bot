@@ -66,7 +66,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "kestra-bot=kestra_demo.app:main",
+            "kestra-bot=kestrabot.app:main",
         ],
     },
     python_requires=">=3.8",

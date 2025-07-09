@@ -98,7 +98,7 @@ The application is built using the Textual framework with the following structur
 ### Project Structure
 
 ```
-kestra_demo/
+kestrabot/
 ├── __init__.py          # Package initialization
 ├── app.py               # Main application code
 ```
@@ -145,7 +145,7 @@ response = client.responses.create(
 
 
 
-Let's develop a python pypi textual terminal application skeleton. Add a python module called `app.py` under the `kestra_demo` package.
+Let's develop a python pypi textual terminal application skeleton. Add a python module called `app.py` under the `kestrabot` package.
 
 This will build an empty textual skeleton application. I want to do all the widgets, layouts, buttons, and styles. I will add the functionality behind it later. I do want a placeholder for all the events fired by the UI interactions (ie: menu button clicks).
 
