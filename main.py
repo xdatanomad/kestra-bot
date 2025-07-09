@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!python3
 """
 Kestra Bot Demo
 Run the application directly
