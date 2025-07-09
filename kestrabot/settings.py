@@ -13,7 +13,7 @@ from pydantic_settings import (
 )
 
 
-__all__ = ["settings", "logger",]
+__all__ = ["settings"]
 
 _CURRENT_DIR_ = Path(__file__).parent.resolve()
 _SETTINGS_FILE_ = _CURRENT_DIR_ / "settings.yaml"
@@ -86,30 +86,12 @@ class Settings(BaseSettings):
         if value not in _MODELS_:
             return "o4-mini"
         return value
-
-
-def setup_logging(settings: Settings) -> logging.Logger:
-    """
-    Configures the Python logging module based on the settings.
-    Sets up a logger with a formatter that includes timestamp, logger name,
-    log level, and the message.
-    """
-    numeric_level = getattr(logging, settings.logging_level.upper(), None) or logging.INFO
-    # Create and configure the logger
-    logger = logging.getLogger("main")
-    logger.setLevel(numeric_level)
-    # Check if the logger already has handlers to avoid duplicate logs
-    if not logger.handlers:
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(numeric_level)
-        # Define a formatter with timestamp, logger name, log level, and message
-        formatter = logging.Formatter("[%(levelname)-8s] [%(asctime)s] - %(name)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
-        console_handler.setFormatter(formatter)
-
-        logger.addHandler(console_handler)
-        logger.propagate = False
-
-    return logger
+    
+    def get_logging_level(self) -> int:
+        """
+        Returns the logging level as an integer.
+        """
+        return getattr(logging, self.logging_level.upper(), logging.INFO)
 
 
 # =======================================
@@ -118,4 +100,3 @@ def setup_logging(settings: Settings) -> logging.Logger:
 # =======================================
 default_args = {}
 settings: Settings = Settings(**default_args)
-logger: logging.Logger = setup_logging(settings)

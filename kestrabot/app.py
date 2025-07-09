@@ -4,7 +4,7 @@ A terminal application for building Kestra ETL Flows using OpenAI agents.
 """
 
 from textual.app import App, ComposeResult
-from textual.containers import Container, Horizontal, Vertical
+from textual.containers import Container, Horizontal, Vertical, VerticalScroll
 from textual.widgets import (
     Header, Footer, TabbedContent, TabPane, TextArea, Label, 
     Static, Log, Collapsible, SelectionList, Select
@@ -15,14 +15,33 @@ from textual.message import Message
 from textual import events
 from typing import Any
 import asyncio
+import logging
 
 from kestrabot.openai_bot import (
     get_kestrabot_client,
     KestraBotOpenAIClient,
     KestraBotFlowResponse
 )
-from kestrabot.settings import settings, logger, _MODELS_
+from kestrabot.settings import settings, _MODELS_
 
+
+class TextualLogHandler(logging.Handler):
+    """Custom logging handler that writes to a Textual Log widget."""
+    
+    def __init__(self, log_widget):
+        super().__init__()
+        self.log_widget = log_widget
+    
+    def emit(self, record):
+        """Emit a log record to the Textual Log widget."""
+        try:
+            msg = self.format(record)
+            # Ensure we're writing to the log widget safely
+            if hasattr(self.log_widget, 'write_line') and self.log_widget.is_mounted:
+                self.log_widget.write_line(msg)
+        except Exception:
+            # Silently ignore errors to avoid infinite recursion
+            pass
 
 
 class KestraBotHeader(Static):
@@ -32,7 +51,7 @@ class KestraBotHeader(Static):
         yield Static(
             "[bold cyan]Kestra Bot Demo[/bold cyan]\n"
             "[dim]An OpenAI agent for building Kestra ETL Flows[/dim]\n"
-            "[italic]Author: Parham (parham.parvizi@gmail.com)[/italic]",
+            "[dim darkviolet]Author: Parham (parham.parvizi@gmail.com)[/dim darkviolet]",
             id="header-content"
         )
 
@@ -77,7 +96,7 @@ class PromptTab(TabPane):
             tab_behavior="indent",
         )
         textarea.indent_type = "spaces"
-        textarea.show_line_numbers = True
+        textarea.show_line_numbers = False
         yield textarea
     
     def on_text_area_changed(self, event: TextArea.Changed) -> None:
@@ -138,19 +157,21 @@ class ExecutionLogsTab(TabPane):
         super().__init__(title, id=id)
     
     def compose(self) -> ComposeResult:
-        with Vertical():
+        with Horizontal():
             # Collapsible sections for execution history
-            with Container(id="execution-history"):
+            with Container(id="execution-history-container"):
                 yield Label("Execution History", classes="section-title")
+                yield VerticalScroll(id="execution-history-scroll")
                 # Placeholder collapsible sections will be added dynamically
             
             # Scrollable log area
-            yield Label("Console Logs", classes="section-title")
-            yield Log(id="console-log", classes="console-log")
+            with Container(id="console-log-container"):
+                yield Label("Console Logs", classes="section-title")
+                yield Log(id="console-log", classes="console-log", max_lines=200)
     
     def add_execution_log(self, execution_id: str, content: str) -> None:
         """Add a new collapsible execution log section."""
-        container = self.query_one("#execution-history", Container)
+        container = self.query_one("#execution-history-scroll", VerticalScroll)
         collapsible = Collapsible(
             Label(content, classes="execution-content"),
             title=f"Execution {execution_id}",
@@ -203,86 +224,33 @@ class SettingsTab(TabPane):
 
 class KestraBotApp(App):
     """Main Kestra Bot Demo application."""
+
+    CSS = """
+    /* Basic styling for the Kestra Bot Demo application */
+
+    #header-content {
+        padding: 0 0;
+        text-align: center;
+    }
     
-    # CSS = """
-    # /* Tokyo Night Theme Colors */
-    # Screen {
-    #     background: #16161e;
-    #     color: #c0caf5;
-    # }
-    
-    # #header-content {
-    #     background: #1a1b26;
-    #     color: #c0caf5;
-    #     padding: 1 2;
-    #     text-align: center;
-    #     border-bottom: heavy #7aa2f7;
-    # }
-    
-    # TabbedContent {
-    #     background: #1a1b26;
-    #     border: heavy #7aa2f7;
-    # }
-    
-    # TabPane {
-    #     background: #16161e;
-    #     padding: 1;
-    # }
-    
-    # .tab-textarea {
-    #     background: #1a1b26;
-    #     border: heavy #bb9af7;
-    #     color: #c0caf5;
-    #     height: 100%;
-    # }
-    
-    # .settings-textarea {
-    #     background: #1a1b26;
-    #     border: heavy #bb9af7;
-    #     color: #c0caf5;
-    #     height: 10;
-    # }
-    
-    # .section-title {
-    #     background: #7aa2f7;
-    #     color: #16161e;
-    #     padding: 0 1;
-    #     margin: 1 0;
-    #     text-style: bold;
-    # }
-    
-    # #status-label {
-    #     background: #1a1b26;
-    #     color: #e0af68;
-    #     padding: 0 2;
-    #     text-align: center;
-    #     border-top: heavy #7aa2f7;
-    # }
-    
-    # .console-log {
-    #     background: #16161e;
-    #     border: heavy #9ece6a;
-    #     height: 20;
-    # }
-    
-    # .execution-content {
-    #     background: #1a1b26;
-    #     padding: 1;
-    #     color: #c0caf5;
-    # }
-    
-    # #execution-history {
-    #     background: #16161e;
-    #     border: heavy #e0af68;
-    #     max-height: 15;
-    #     overflow-y: auto;
-    # }
-    
-    # Footer {
-    #     background: #1a1b26;
-    #     border-top: heavy #7aa2f7;
-    # }
-    # """
+    #status-label {
+        height: 10%;
+        padding: 0 2;
+    }
+
+    #main-tabs {
+        height: 90%;
+        padding: 1 2;
+    }
+
+    #execution-history-container {
+        padding: 0 1;
+    }
+
+    #console-log-container {
+        padding: 0 1;
+    }
+    """
     
     BINDINGS = [
         Binding("ctrl+q", "quit", "Quit", priority=True),
@@ -305,7 +273,7 @@ class KestraBotApp(App):
         """Compose the application layout."""
         yield KestraBotHeader()
         
-        with TabbedContent(initial="prompt"):
+        with TabbedContent(initial="prompt", id="main-tabs"):
             yield PromptTab("Prompt", id="prompt")
             yield MetadataTab("Metadata", id="metadata")
             yield KestraFlowTab("Kestra Flow", id="flow")
@@ -317,6 +285,21 @@ class KestraBotApp(App):
     
     def on_mount(self) -> None:
         """Called when the app is mounted."""
+        # Set the theme
+        self.theme = "tokyo-night"
+
+        # Set up custom logging to the Log widget
+        log_widget = self.query_one("#console-log", Log)
+        handler = TextualLogHandler(log_widget)
+        handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s: %(message)s"))
+        # Remove existing handlers to avoid duplicate logging
+        root_logger = logging.getLogger()
+        for existing_handler in root_logger.handlers[:]:
+            root_logger.removeHandler(existing_handler)
+        root_logger.addHandler(handler)
+        root_logger.setLevel(settings.get_logging_level())
+        logging.info("Kestra Bot Demo application started")
+
         # Set initial status
         status_bar = self.query_one(StatusBar)
         asyncio.create_task(status_bar.update_status("Application started"))
@@ -367,7 +350,6 @@ class KestraBotApp(App):
         logs_tab.add_console_log("Build Flow action triggered")
         
         # Simulate some work
-        await asyncio.sleep(1)
         await status_bar.update_status("Flow build completed")
     
     async def action_add_to_kestra(self) -> None:
@@ -392,7 +374,7 @@ class KestraBotApp(App):
         
         # Add console log
         logs_tab = self.query_one("#logs", ExecutionLogsTab)
-        logs_tab.add_console_log("Execute Flow action triggered")
+        logging.info("Executing Kestra Flow...")
         
         # Add execution log
         import time
@@ -403,7 +385,6 @@ class KestraBotApp(App):
         )
         
         # Simulate some work
-        await asyncio.sleep(2)
         await status_bar.update_status("Flow execution completed")
     
     def action_quit(self) -> None:

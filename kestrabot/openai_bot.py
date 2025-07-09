@@ -12,11 +12,12 @@ Author: Parham (parham.parvizi@gmail.com)
 import os
 import yaml
 import time
+import logging
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator
 from openai import OpenAI
 
-from kestrabot.settings import settings, logger
+from kestrabot.settings import settings
 
 
 # Load OpenAI API key from environment variable: $KESTRABOT_OPENAI_API_KEY
@@ -79,9 +80,9 @@ class KestraBotOpenAIClient:
                 "OpenAI API key is required. Please provide it as a parameter "
                 "or set the OPENAI_API_KEY environment variable."
             )
-        logger.info(f"Found OpenAI API key: '{'*' * 4}{api_key[-6:]}'")
+        logging.info(f"Found OpenAI API key: '{'*' * 4}{api_key[-6:]}'")
         self.client = OpenAI(api_key=api_key)
-        logger.info("Kestra OpenAI client initialized successfully")
+        logging.info("Kestra OpenAI client initialized successfully")
     
     def generate_kestra_flow(self, user_input: str, metadata: Optional[str] = None) -> KestraBotFlowResponse:
         """
@@ -127,7 +128,7 @@ class KestraBotOpenAIClient:
             )
         
         try:
-            logger.info(f"Generating Kestra flow for user input:\n{user_input[:100]}\n...")
+            logging.info(f"Generating Kestra flow for user input:\n{user_input[:100]}\n...")
             start_time = time.time()
             
             # Make the API call to OpenAI responses endpoint
@@ -166,9 +167,9 @@ class KestraBotOpenAIClient:
             # Extract model information safely
             model = getattr(response, 'model', 'unknown')
             
-            logger.info(f"Token usage - Input: {input_tokens}, Output: {output_tokens}, Total: {total_tokens}")
-            logger.info(f"Execution time: {execution_time:.2f} seconds")
-            logger.info("Kestra flow generated successfully")
+            logging.info(f"Token usage - Input: {input_tokens}, Output: {output_tokens}, Total: {total_tokens}")
+            logging.info(f"Execution time: {execution_time:.2f} seconds")
+            logging.info("Kestra flow generated successfully")
             
             # Construct and return KestraFlowResponse object
             return KestraBotFlowResponse(
@@ -185,7 +186,7 @@ class KestraBotOpenAIClient:
             )
                 
         except Exception as e:
-            logger.error(f"Error generating Kestra flow: {str(e)}")
+            logging.error(f"Error generating Kestra flow: {str(e)}")
             raise Exception(f"Failed to generate Kestra flow: {str(e)}")
     
     def validate_response_yaml(self, content: str) -> str:
@@ -235,7 +236,7 @@ def get_kestrabot_client() -> KestraBotOpenAIClient:
     global client
     if client is None:
         client = KestraBotOpenAIClient()
-        logger.info("Kestra OpenAI client instance created")
+        logging.info("Kestra OpenAI client instance created")
     return client
 
 
