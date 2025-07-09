@@ -32,7 +32,7 @@ class KestraBotHeader(Static):
         yield Static(
             "[bold cyan]Kestra Bot Demo[/bold cyan]\n"
             "[dim]An OpenAI agent for building Kestra ETL Flows[/dim]\n"
-            "[italic]Author: Parham (parham.parvizi@gmail.com)[/italic]",
+            "[dim darkviolet]Author: Parham (parham.parvizi@gmail.com)[/dim darkviolet]",
             id="header-content"
         )
 
@@ -203,86 +203,25 @@ class SettingsTab(TabPane):
 
 class KestraBotApp(App):
     """Main Kestra Bot Demo application."""
+
+    CSS = """
+    /* Basic styling for the Kestra Bot Demo application */
+
+    #header-content {
+        padding: 0 0;
+        text-align: center;
+    }
     
-    # CSS = """
-    # /* Tokyo Night Theme Colors */
-    # Screen {
-    #     background: #16161e;
-    #     color: #c0caf5;
-    # }
-    
-    # #header-content {
-    #     background: #1a1b26;
-    #     color: #c0caf5;
-    #     padding: 1 2;
-    #     text-align: center;
-    #     border-bottom: heavy #7aa2f7;
-    # }
-    
-    # TabbedContent {
-    #     background: #1a1b26;
-    #     border: heavy #7aa2f7;
-    # }
-    
-    # TabPane {
-    #     background: #16161e;
-    #     padding: 1;
-    # }
-    
-    # .tab-textarea {
-    #     background: #1a1b26;
-    #     border: heavy #bb9af7;
-    #     color: #c0caf5;
-    #     height: 100%;
-    # }
-    
-    # .settings-textarea {
-    #     background: #1a1b26;
-    #     border: heavy #bb9af7;
-    #     color: #c0caf5;
-    #     height: 10;
-    # }
-    
-    # .section-title {
-    #     background: #7aa2f7;
-    #     color: #16161e;
-    #     padding: 0 1;
-    #     margin: 1 0;
-    #     text-style: bold;
-    # }
-    
-    # #status-label {
-    #     background: #1a1b26;
-    #     color: #e0af68;
-    #     padding: 0 2;
-    #     text-align: center;
-    #     border-top: heavy #7aa2f7;
-    # }
-    
-    # .console-log {
-    #     background: #16161e;
-    #     border: heavy #9ece6a;
-    #     height: 20;
-    # }
-    
-    # .execution-content {
-    #     background: #1a1b26;
-    #     padding: 1;
-    #     color: #c0caf5;
-    # }
-    
-    # #execution-history {
-    #     background: #16161e;
-    #     border: heavy #e0af68;
-    #     max-height: 15;
-    #     overflow-y: auto;
-    # }
-    
-    # Footer {
-    #     background: #1a1b26;
-    #     border-top: heavy #7aa2f7;
-    # }
-    # """
+    #status-label {
+        height: 10%;
+        padding: 0 2;
+    }
+
+    #main-tabs {
+        height: 90%;
+        padding: 1 2;
+    }
+    """
     
     BINDINGS = [
         Binding("ctrl+q", "quit", "Quit", priority=True),
@@ -305,7 +244,7 @@ class KestraBotApp(App):
         """Compose the application layout."""
         yield KestraBotHeader()
         
-        with TabbedContent(initial="prompt"):
+        with TabbedContent(initial="prompt", id="main-tabs"):
             yield PromptTab("Prompt", id="prompt")
             yield MetadataTab("Metadata", id="metadata")
             yield KestraFlowTab("Kestra Flow", id="flow")
@@ -318,6 +257,7 @@ class KestraBotApp(App):
     def on_mount(self) -> None:
         """Called when the app is mounted."""
         # Set initial status
+        # self.theme = "tokyo-night"
         status_bar = self.query_one(StatusBar)
         asyncio.create_task(status_bar.update_status("Application started"))
     
