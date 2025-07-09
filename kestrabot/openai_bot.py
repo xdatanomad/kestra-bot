@@ -79,7 +79,7 @@ class KestraBotOpenAIClient:
                 "OpenAI API key is required. Please provide it as a parameter "
                 "or set the OPENAI_API_KEY environment variable."
             )
-        logger.info(f"Found OpenAI API key: '{'*' * 4}{api_key[:4]}'")
+        logger.info(f"Found OpenAI API key: '{'*' * 4}{api_key[-6:]}'")
         self.client = OpenAI(api_key=api_key)
         logger.info("Kestra OpenAI client initialized successfully")
     
