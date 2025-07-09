@@ -21,6 +21,7 @@ from kestrabot.openai_bot import (
     KestraBotOpenAIClient,
     KestraBotFlowResponse
 )
+from kestrabot.settings import settings, logger, _MODELS_
 
 
 
@@ -177,13 +178,13 @@ class SettingsTab(TabPane):
                 id="dev-prompt-textarea",
                 classes="settings-textarea"
             )
-            dev_prompt_textarea.text = "OpenAI developer prompt configuration..."
+            dev_prompt_textarea.text = settings.developer_prompt or "Enter your developer prompt here. This will be used to guide generation of Kestra Flows.\n"
             yield dev_prompt_textarea
             
             yield Label("OpenAI Model Selection", classes="section-title")
             yield Select(
-                [("GPT-4.1", "gpt-4.1"), ("GPT-4 Mini", "gpt-4-mini")],
-                value="gpt-4-mini",
+                [(model, model) for model in _MODELS_],
+                value=settings.openai_model,
                 id="model-select"
             )
     

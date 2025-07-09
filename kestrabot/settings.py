@@ -15,14 +15,13 @@ from pydantic_settings import (
 
 __all__ = ["settings", "logger",]
 
-
-_DEFAULT_PROMPTS = dict(
-    transcription_prompt=None,
-)
-
-
 _CURRENT_DIR_ = Path(__file__).parent.resolve()
 _SETTINGS_FILE_ = _CURRENT_DIR_ / "settings.yaml"
+
+_MODELS_ = {
+    "o4-mini",
+    "gpt-4.1",
+}
 
 
 class Settings(BaseSettings):
@@ -76,6 +75,16 @@ class Settings(BaseSettings):
                 return "INFO"
         else:
             return "INFO"
+        return value
+    
+    @field_validator("openai_model", mode="before")
+    def validate_openai_model(cls, value: str) -> str:
+        """
+        Validates the OpenAI model to ensure it is one of the supported models.
+        If the provided value is not valid, returns the default "o4-mini" model.
+        """
+        if value not in _MODELS_:
+            return "o4-mini"
         return value
 
 
