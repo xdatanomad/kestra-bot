@@ -16,10 +16,10 @@ from textual import events
 from typing import Any
 import asyncio
 
-from kestrabot.flowbot import (
-    get_kestra_client,
-    KestraOpenAIClient,
-    KestraFlowResponse
+from kestrabot.openai_bot import (
+    get_kestrabot_client,
+    KestraBotOpenAIClient,
+    KestraBotFlowResponse
 )
 
 
@@ -343,9 +343,9 @@ class KestraBotApp(App):
         await status_bar.update_status("Building Kestra Flow...")
 
         # Call the Kestra OpenAI client to generate the flow
-        client: KestraOpenAIClient = get_kestra_client()
+        client: KestraBotOpenAIClient = get_kestrabot_client()
         try:
-            response: KestraFlowResponse = client.generate_kestra_flow(
+            response: KestraBotFlowResponse = client.generate_kestra_flow(
                 user_input=prompt,
                 metadata=metadata
             )

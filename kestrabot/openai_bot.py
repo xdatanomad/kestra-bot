@@ -10,7 +10,7 @@ Author: Parham (parham.parvizi@gmail.com)
 """
 
 import os
-import logging
+import yaml
 import time
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator
@@ -27,7 +27,7 @@ KESTRA_PROMPT_ID = "pmpt_686e75a5f28c8193b1100b441bcdca320f2c2115eba99734"
 KESTRA_PROMPT_VERSION = "1"
 
 
-class KestraFlowResponse(BaseModel):
+class KestraBotFlowResponse(BaseModel):
     """
     KestraFlowResponse represents the response from an OpenAI-powered Kestra flow execution.
 
@@ -53,7 +53,7 @@ class KestraFlowResponse(BaseModel):
         return v
 
 
-class KestraOpenAIClient:
+class KestraBotOpenAIClient:
     """
     OpenAI client wrapper for Kestra flow generation.
     
@@ -83,7 +83,7 @@ class KestraOpenAIClient:
         self.client = OpenAI(api_key=api_key)
         logger.info("Kestra OpenAI client initialized successfully")
     
-    def generate_kestra_flow(self, user_input: str, metadata: Optional[str] = None) -> KestraFlowResponse:
+    def generate_kestra_flow(self, user_input: str, metadata: Optional[str] = None) -> KestraBotFlowResponse:
         """
         Generate a Kestra Flow YAML from user input.
         
@@ -147,10 +147,12 @@ class KestraOpenAIClient:
             # Calculate execution time
             execution_time = time.time() - start_time
                 
-            # get the generated content from the first output item
+            # Get the generated content from the first output item
             generated_content = response.output_text
             if not generated_content:
                 raise Exception("Could not extract output text content from OpenAI response")
+            # Validate and cleanup response into valid Kestra YAML
+            generated_content = self.validate_response_yaml(generated_content)
 
             # Extract token usage information safely
             input_tokens = 0
@@ -169,7 +171,7 @@ class KestraOpenAIClient:
             logger.info("Kestra flow generated successfully")
             
             # Construct and return KestraFlowResponse object
-            return KestraFlowResponse(
+            return KestraBotFlowResponse(
                 id=(response.id or None),
                 type="completed",
                 input=user_input,
@@ -186,28 +188,39 @@ class KestraOpenAIClient:
             logger.error(f"Error generating Kestra flow: {str(e)}")
             raise Exception(f"Failed to generate Kestra flow: {str(e)}")
     
-    def validate_response(self, response) -> bool:
+    def validate_response_yaml(self, content: str) -> str:
         """
-        Validate the OpenAI response structure.
-        
+        Validate the generated Kestra flow YAML content. Clean up the YAML content to remove any markdown formatting
+        and ensure it's a valid YAML string.
+
         Args:
-            response: The response from OpenAI API.
-        
+            content (str): The generated Kestra flow YAML content.
         Returns:
-            bool: True if response is valid, False otherwise.
+            str: Cleaned and validated YAML content.
         """
-        return (
-            response is not None and
-            hasattr(response, 'output') and
-            response.output is not None and
-            len(response.output) > 0
-        )
+        if not content:
+            raise ValueError("Kestra YAML Content cannot be empty")
+        
+        # Remove any markdown formatting
+        cleaned_content = content.strip().replace("```yaml", "").replace("```", "")
+        
+        # Parse the cleaned content to ensure it's valid YAML
+        try:
+            tmp = yaml.safe_load(cleaned_content)
+            # make sure the content is valid Kestra YAML
+            if any(key not in tmp for key in ["id", "namespace", "tasks"]):
+                raise ValueError("Invalid Kestra YAML structure. Missing required keys.")
+        except yaml.YAMLError as e:
+            raise ValueError(f"Invalid Kestra YAML content: {str(e)}")
+        
+        return cleaned_content
 
 
-client: Optional[KestraOpenAIClient] = None
+
+client: Optional[KestraBotOpenAIClient] = None
 
 
-def get_kestra_client() -> KestraOpenAIClient:
+def get_kestrabot_client() -> KestraBotOpenAIClient:
     """
     Get the global Kestra OpenAI client instance.
     
@@ -219,7 +232,7 @@ def get_kestra_client() -> KestraOpenAIClient:
     """
     global client
     if client is None:
-        client = KestraOpenAIClient()
+        client = KestraBotOpenAIClient()
         logger.info("Kestra OpenAI client instance created")
     return client
 
@@ -237,7 +250,7 @@ def test():
     # Example usage of the module
     try:
         # Initialize the client
-        client = KestraOpenAIClient()
+        client = KestraBotOpenAIClient()
         
         # Test prompt
         test_prompt = (

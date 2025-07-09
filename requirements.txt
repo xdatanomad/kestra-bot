@@ -1,8 +1,9 @@
 textual
 textual-dev
 textual[syntax]
-setuptools
+PyYAML
 pydantic
 pydantic-settings
 pydantic-settings[yaml]
 openai
+setuptools
