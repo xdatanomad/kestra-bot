@@ -16,7 +16,7 @@ from textual import events
 from typing import Any
 import asyncio
 
-from kestrabot.openai import (
+from kestrabot.flowbot import (
     get_kestra_client,
     KestraOpenAIClient,
     KestraFlowResponse
