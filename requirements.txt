@@ -2,3 +2,6 @@ textual
 textual-dev
 textual[syntax]
 setuptools
+pydantic
+pydantic-settings
+openai
