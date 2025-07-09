@@ -203,13 +203,15 @@ class KestraBotOpenAIClient:
         
         # Remove any markdown formatting
         cleaned_content = content.strip().replace("```yaml", "").replace("```", "")
-        
+        cleaned_content = cleaned_content.strip()
+
         # Parse the cleaned content to ensure it's valid YAML
         try:
             tmp = yaml.safe_load(cleaned_content)
             # make sure the content is valid Kestra YAML
-            if any(key not in tmp for key in ["id", "namespace", "tasks"]):
-                raise ValueError("Invalid Kestra YAML structure. Missing required keys.")
+            required_keys = ["id", "namespace", "tasks"]
+            if any(key not in tmp for key in required_keys):
+                raise ValueError(f"Invalid Kestra YAML structure. Missing one of the required keys: {required_keys}")
         except yaml.YAMLError as e:
             raise ValueError(f"Invalid Kestra YAML content: {str(e)}")
         
