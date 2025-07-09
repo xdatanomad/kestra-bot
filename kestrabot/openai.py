@@ -1,6 +1,4 @@
 
-
-
 """
 Kestra Demo OpenAI Integration Module
 
@@ -15,9 +13,8 @@ import os
 import logging
 import time
 from typing import Optional
-from openai import OpenAI
 from pydantic import BaseModel, Field, field_validator
-from openai.types.responses import ResponseOutputItem
+from openai import OpenAI
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -207,38 +204,36 @@ class KestraOpenAIClient:
         )
 
 
-# Convenience function for direct usage
-def generate_kestra_flow_from_prompt(user_input: str, metadata: Optional[str] = None) -> KestraFlowResponse:
+client: Optional[KestraOpenAIClient] = None
+
+
+def get_kestra_client() -> KestraOpenAIClient:
     """
-    Convenience function to generate a Kestra Flow YAML from user input.
+    Get the global Kestra OpenAI client instance.
     
-    This is a simplified wrapper around the KestraOpenAIClient class for
-    quick usage without needing to instantiate the client manually.
-    
-    Args:
-        user_input (str): The user's prompt describing what they want the
-                        Kestra flow to accomplish.
-        metadata (Optional[str]): Additional metadata information.
+    This function initializes the KestraOpenAIClient if it has not been created yet,
+    ensuring that the client is ready for use throughout the application.
     
     Returns:
-        KestraFlowResponse: A response object containing the generated YAML and metadata.
+        KestraOpenAIClient: The initialized Kestra OpenAI client instance.
+    """
+    global client
+    if client is None:
+        client = KestraOpenAIClient()
+        logger.info("Kestra OpenAI client instance created")
+    return client
+
+
+def test():
+    """
+    Test function to verify the Kestra OpenAI client functionality.
+    
+    This function is intended for internal testing purposes to ensure that the
+    Kestra OpenAI client can successfully generate a Kestra flow from a sample prompt.
     
     Raises:
-        ValueError: If user_input is empty or None.
-        Exception: If OpenAI API call fails.
-    
-    Example:
-        >>> response = generate_kestra_flow_from_prompt(
-        ...     "Create a flow that processes customer data"
-        ... )
-        >>> print(response.output)
+        Exception: If the test fails or if the API key is not set.
     """
-    client = KestraOpenAIClient()
-    return client.generate_kestra_flow(user_input, metadata)
-
-
-# Example usage and testing
-if __name__ == "__main__":
     # Example usage of the module
     try:
         # Initialize the client
@@ -283,3 +278,8 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error: {e}")
         print("Make sure you have set your OPENAI_API_KEY environment variable")
+
+
+# Example usage and testing
+if __name__ == "__main__":
+    test()

@@ -16,6 +16,13 @@ from textual import events
 from typing import Any
 import asyncio
 
+from kestrabot.openai import (
+    get_kestra_client,
+    KestraOpenAIClient,
+    KestraFlowResponse
+)
+
+
 
 class KestraBotHeader(Static):
     """Custom header widget for the Kestra Bot Demo application."""
@@ -324,9 +331,35 @@ class KestraBotApp(App):
     
     async def action_build_flow(self) -> None:
         """Handle Build Flow action."""
-        # Placeholder for build flow functionality
+        # Get prompt tab text area content
+        prompt_textarea = self.query_one("#prompt-textarea", TextArea)
+        prompt = prompt_textarea.text.strip()
+        # Get Metadata tab text area content
+        metadata_textarea = self.query_one("#metadata-textarea", TextArea)
+        metadata = metadata_textarea.text.strip()
+
+        # set status
         status_bar = self.query_one(StatusBar)
         await status_bar.update_status("Building Kestra Flow...")
+
+        # Call the Kestra OpenAI client to generate the flow
+        client: KestraOpenAIClient = get_kestra_client()
+        try:
+            response: KestraFlowResponse = client.generate_kestra_flow(
+                user_input=prompt,
+                metadata=metadata
+            )
+            if response.output:
+                flow_textarea = self.query_one("#flow-textarea", TextArea)
+                flow_textarea.text = response.output
+                await status_bar.update_status("Flow generated successfully")
+            else:
+                raise ValueError("No output generated from the flow")
+        except Exception as e:
+            await status_bar.update_status(f"Error: {str(e)}")
+            logs_tab = self.query_one("#logs", ExecutionLogsTab)
+            logs_tab.add_console_log(f"Error generating flow: {str(e)}")
+            return
         
         # Add console log
         logs_tab = self.query_one("#logs", ExecutionLogsTab)
