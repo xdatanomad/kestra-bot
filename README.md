@@ -11,6 +11,25 @@ A Textual terminal application for building Kestra ETL Flows using OpenAI agents
 - **Keyboard Shortcuts**: Quick navigation and actions via keyboard bindings
 - **Extensible Architecture**: Easy to add new functionality and event handlers
 
+## Prerequisites
+
+### Set up OpenAI API Key
+
+This project makes calls to OpenAI API to generate Kestra flows based on user input. You need an OpenAI API key to use this functionality.
+Furthermore, it uses OpenAI's reasoning models which needs to be **enabled** in your OpenAI account.
+
+To generate an OpenAI API key, follow these steps:
+1. Go to the [OpenAI API Keys](https://platform.openai.com/settings/organization/api-keys).
+2. Click on "Create new secret key".
+3. Copy the generated key and set `$KESTRABOT_OPENAI_API_KEY` environment variable.
+4. To enable reasoning models, you need to **verify** your account under the [General Settings](https://platform.openai.com/settings/organization/general).
+
+To use the OpenAI API, set your API key in the environment variable `KESTRABOT_OPENAI_API_KEY`:
+
+```bash
+export KESTRABOT_OPENAI_API_KEY="your_openai_api_key_here"
+```
+
 ## Installation
 
 ### Development Setup
