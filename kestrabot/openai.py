@@ -16,9 +16,8 @@ from typing import Optional
 from pydantic import BaseModel, Field, field_validator
 from openai import OpenAI
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from kestrabot.settings import settings, logger
+
 
 # Load OpenAI API key from environment variable: $KESTRABOT_OPENAI_API_KEY
 KESTRABOT_OPENAI_API_KEY = os.getenv("KESTRABOT_OPENAI_API_KEY", None)
@@ -74,12 +73,13 @@ class KestraOpenAIClient:
             ValueError: If no API key is provided or found in environment.
         """
         if api_key is None:
-            api_key = KESTRABOT_OPENAI_API_KEY            
+            api_key = settings.openai_api_key or KESTRABOT_OPENAI_API_KEY            
         if not api_key:
             raise ValueError(
                 "OpenAI API key is required. Please provide it as a parameter "
                 "or set the OPENAI_API_KEY environment variable."
             )
+        logger.info(f"Found OpenAI API key: '{'*' * 4}{api_key[:4]}'")
         self.client = OpenAI(api_key=api_key)
         logger.info("Kestra OpenAI client initialized successfully")
     
