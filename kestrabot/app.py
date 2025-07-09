@@ -91,7 +91,6 @@ class PromptTab(TabPane):
             text,
             language="markdown",
             id="prompt-textarea",
-            classes="tab-textarea",
             theme="dracula",
             tab_behavior="indent",
         )
@@ -110,7 +109,6 @@ class MetadataTab(TabPane):
         textarea = TextArea(
             language="markdown",
             id="metadata-textarea",
-            classes="tab-textarea"
         )
         textarea.text = "Enter metadata information (table schema, data definitions, credentials, etc.)"
         yield textarea
@@ -126,9 +124,12 @@ class KestraFlowTab(TabPane):
         textarea = TextArea(
             language="yaml",
             id="flow-textarea",
-            classes="tab-textarea"
+            show_line_numbers=True,
+            theme="dracula",
+            tab_behavior="indent",
         )
-        textarea.text = "Generated Kestra Flow YAML will appear here..."
+        textarea.indent_type = "spaces"
+        textarea.text = "- wait_for_it: Generated Kestra Flow YAML will appear here..."
         yield textarea
 
 
@@ -179,7 +180,7 @@ class SettingsTab(TabPane):
             dev_prompt_textarea = TextArea(
                 language="markdown",
                 id="dev-prompt-textarea",
-                classes="settings-textarea"
+                read_only=True,
             )
             dev_prompt_textarea.text = settings.developer_prompt or "Enter your developer prompt here. This will be used to guide generation of Kestra Flows.\n"
             yield dev_prompt_textarea
