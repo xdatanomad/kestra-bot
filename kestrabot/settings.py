@@ -13,7 +13,7 @@ from pydantic_settings import (
 )
 
 
-__all__ = ["settings", "logger",]
+__all__ = ["settings"]
 
 _CURRENT_DIR_ = Path(__file__).parent.resolve()
 _SETTINGS_FILE_ = _CURRENT_DIR_ / "settings.yaml"
