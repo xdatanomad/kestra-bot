@@ -26,8 +26,8 @@ logger = logging.getLogger(__name__)
 KESTRABOT_OPENAI_API_KEY = os.getenv("KESTRABOT_OPENAI_API_KEY", None)
 
 # Constants
-KESTRA_PROMPT_ID = "pmpt_686d454e7bac8195a2de39f100a5a7ce08de1409dc42761e"
-KESTRA_PROMPT_VERSION = "5"
+KESTRA_PROMPT_ID = "pmpt_686e75a5f28c8193b1100b441bcdca320f2c2115eba99734"
+KESTRA_PROMPT_VERSION = "1"
 
 
 class KestraFlowResponse(BaseModel):
@@ -128,9 +128,7 @@ class KestraOpenAIClient:
             )
         
         try:
-            logger.info(f"Generating Kestra flow for user input: {user_input[:100]}...")
-            
-            # Record start time for execution time calculation
+            logger.info(f"Generating Kestra flow for user input:\n{user_input[:100]}\n...")
             start_time = time.time()
             
             # Make the API call to OpenAI responses endpoint
@@ -262,8 +260,32 @@ if __name__ == "__main__":
         client = KestraOpenAIClient()
         
         # Test prompt
-        test_prompt = "Create a simple ETL flow that reads from a CSV file and writes to a database"
-        
+        test_prompt = (
+            "* **Fetch users from API:**\n"
+            "  “GET `https://gorest.co.in/public/v2/users`.”\n"
+            "\n"
+            "* **Convert JSON → Ion:**\n"
+            "  “Transform that JSON into Ion format (no new-line splitting).”\n"
+            "\n"
+            "* **Convert Ion → JSON:**\n"
+            "  “Serialize the Ion back into line-delimited JSON.”\n"
+            "\n"
+            "* **Enrich each record:**\n"
+            "  “Run a Jython script on each row to log it and add `inserted_at = current UTC timestamp`.”\n"
+            "\n"
+            "* **Fan out two branches in parallel:**\n"
+            "\n"
+            "  **• Postgres branch:**\n"
+            "\n"
+            "  1. “Convert enriched Ion to CSV with header.”\n"
+            "  2. “CREATE TABLE IF NOT EXISTS `public.raw_users` (id, name, email, gender, status, inserted\\_at).”\n"
+            "  3. “COPY IN the CSV into Postgres `public.raw_users` via JDBC.”\n"
+            "\n"
+            "  **• S3 branch:**\n"
+            "\n"
+            "  1. “Convert enriched Ion to JSON lines.”\n"
+            "  2. “Upload `users.json` to S3 bucket `kestraio` using AWS creds from secrets.”\n"
+        )   
         # Generate Kestra flow
         response = client.generate_kestra_flow(test_prompt)
         
