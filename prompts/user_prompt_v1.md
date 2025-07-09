@@ -9,7 +9,7 @@
 - Fan out two branches in parallel:
   - Postgres branch:
     1. Convert enriched Ion to CSV with header.
-    2. CREATE TABLE IF NOT EXISTS `public.raw_users` (id, name, email, gender, status, inserted\_at).
+    2. CREATE TABLE IF NOT EXISTS `public.raw_users` (id, name, email, gender, status, inserted_at).
     3. COPY IN the CSV into Postgres `public.raw_users` via JDBC.
   - S3 branch:
     1. Convert enriched Ion to JSON lines.
