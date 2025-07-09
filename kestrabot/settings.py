@@ -116,5 +116,6 @@ def setup_logging(settings: Settings) -> logging.Logger:
 # Module global variables
 # Initialize settings and logger
 # =======================================
-settings: Settings = Settings()
+default_args = {}
+settings: Settings = Settings(**default_args)
 logger: logging.Logger = setup_logging(settings)
