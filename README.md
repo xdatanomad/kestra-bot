@@ -98,7 +98,11 @@ python main.py
 
 ## Architecture
 
-The Kestra Bot follows a modular architecture with clear separation of concerns:
+The Kestra Bot uses a tuned OpenAI prompt with _fewshot_ examples to generate Kestra flows from natural language descriptions.
+
+Please see the prompt here: [prompts/user_kestra_prompt_v2.md](prompts/user_kestra_prompt_v2.md).
+
+![Kestra-bot Settings](./imgs/tab_settings.png)
 
 #### Core Components
 
@@ -114,7 +118,6 @@ The Kestra Bot follows a modular architecture with clear separation of concerns:
 4. **Flow Generation**: Generated Kestra YAML flows are displayed in the Kestra Flow tab
 5. **Execution**: Flows can be added to Kestra server and executed with logs displayed in Execution Logs tab
 
-![Kestra-bot Settings](./imgs/tab_settings.png)
 
 ## Contributing
 
