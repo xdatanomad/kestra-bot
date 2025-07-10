@@ -6,4 +6,5 @@ pydantic
 pydantic-settings
 pydantic-settings[yaml]
 openai
+copykitten
 setuptools

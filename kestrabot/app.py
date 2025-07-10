@@ -7,7 +7,7 @@ from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical, VerticalScroll
 from textual.widgets import (
     Header, Footer, TabbedContent, TabPane, TextArea, Label, 
-    Static, Log, Collapsible, SelectionList, Select, MarkdownViewer
+    Static, Log, Collapsible, SelectionList, Select, MarkdownViewer, Button
 )
 from textual.binding import Binding
 from textual.reactive import reactive
@@ -16,6 +16,7 @@ from textual import events, on
 from typing import Any, Optional
 import asyncio
 import logging
+from copykitten import copy as clipboard_copy
 
 from kestrabot.openai_bot import (
     get_kestrabot_client,
@@ -85,7 +86,7 @@ class PromptTab(TabPane):
         super().__init__(title, id=id)
     
     def compose(self) -> ComposeResult:
-        text = "Enter your prompt here. Describe what you want the Kestra Bot to do."
+        text = "Enter your prompt here."
         # Create a TextArea for user input
         textarea = TextArea.code_editor(
             text,
@@ -110,7 +111,7 @@ class MetadataTab(TabPane):
             language="markdown",
             id="metadata-textarea",
         )
-        textarea.text = "Enter metadata information (table schema, data definitions, credentials, etc.)"
+        textarea.text = settings.metadata or "Enter medata information here."
         yield textarea
 
 
@@ -131,6 +132,24 @@ class KestraFlowTab(TabPane):
         textarea.indent_type = "spaces"
         textarea.text = "- wait_for_it: Generated Kestra Flow YAML will appear here..."
         yield textarea
+
+        button = Button("Copy", id="copy-flow-btn", variant="primary", compact=True)
+        yield button
+
+    @on(Button.Pressed)
+    def on_copy_flow_pressed(self, event: Button.Pressed) -> None:
+        """Handle copy flow button press."""
+        if event.button.id == "copy-flow-btn":
+            textarea = self.query_one("#flow-textarea", TextArea)
+            content = textarea.text.strip()
+            if content:
+                # Copy the content to clipboard
+                set_status("Flow copied to clipboard")
+                try:
+                    clipboard_copy(content)
+                except Exception as e:
+                    set_status(f"Clipboard error: {e}")
+        
 
 
 class ExecutionLogsTab(TabPane):
@@ -240,6 +259,10 @@ class KestraBotApp(App):
         padding: 0 1;
     }
 
+    #copy-flow-btn {
+        padding: 1 1;
+    }
+
     .label {
         padding: 1 1;
         text-style: bold;
@@ -317,34 +340,13 @@ class KestraBotApp(App):
         metadata = metadata_textarea.text.strip()
 
         # set status
-        status_bar = self.query_one(StatusBar)
-        await status_bar.update_status("Building Kestra Flow...")
+        logging.info("Building Kestra Flow...")
+        set_status("Building Kestra Flow...")
 
-        # Call the Kestra OpenAI client to generate the flow
-        client: KestraBotOpenAIClient = get_kestrabot_client()
-        try:
-            response: KestraBotFlowResponse = client.generate_kestra_flow(
-                user_input=prompt,
-                metadata=metadata
-            )
-            if response.output:
-                flow_textarea = self.query_one("#flow-textarea", TextArea)
-                flow_textarea.text = response.output
-                await status_bar.update_status("Flow generated successfully")
-            else:
-                raise ValueError("No output generated from the flow")
-        except Exception as e:
-            await status_bar.update_status(f"Error: {str(e)}")
-            logs_tab = self.query_one("#logs", ExecutionLogsTab)
-            logs_tab.add_console_log(f"Error generating flow: {str(e)}")
-            return
+        # Call the async method to build the flow
+        asyncio.create_task(self._build_flow(prompt, metadata))
         
-        # Add console log
-        logs_tab = self.query_one("#logs", ExecutionLogsTab)
-        logs_tab.add_console_log("Build Flow action triggered")
-        
-        # Simulate some work
-        await status_bar.update_status("Flow build completed")
+
     
     async def action_add_to_kestra(self) -> None:
         """Handle Add to Kestra action."""
@@ -380,6 +382,27 @@ class KestraBotApp(App):
         
         # Simulate some work
         await self.set_status("Flow execution completed")
+
+    async def _build_flow(self, prompt: str, metadata: Optional[str] = None) -> str:
+        client: KestraBotOpenAIClient = get_kestrabot_client()
+        try:
+            # Run the blocking generate_kestra_flow in a thread
+            response: KestraBotFlowResponse = await asyncio.to_thread(
+                client.generate_kestra_flow,
+                user_input=prompt,
+                metadata=metadata
+            )
+            if response.output:
+                flow_textarea = self.query_one("#flow-textarea", TextArea)
+                flow_textarea.text = response.output
+                set_status("Flow generated successfully")
+                return response.output
+            else:
+                raise ValueError("No output generated from the flow")
+        except Exception as e:
+            set_status(f"Error: {str(e)}")
+            logging.error(f"{str(e)}")
+            return ""
     
     def action_quit(self) -> None:
         """Quit the application."""
