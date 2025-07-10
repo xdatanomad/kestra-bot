@@ -4,12 +4,22 @@ A Textual terminal application for building Kestra ETL Flows using OpenAI agents
 
 ## Features
 
-- **Interactive Terminal UI**: Built with Textual framework for a modern terminal experience
-- **Tokyo Night Theme**: Beautiful dark theme with syntax highlighting
-- **Tabbed Interface**: Multiple tabs for different aspects of ETL flow development
-- **Real-time Status Updates**: Async status updates for background tasks
-- **Keyboard Shortcuts**: Quick navigation and actions via keyboard bindings
-- **Extensible Architecture**: Easy to add new functionality and event handlers
+- **OpenAI Agents:** Utilizes OpenAI's _reasoning_ models to generate Kestra flows from natural language descriptions.
+- **Kestra Flow Generation:** Automatically generates and _validates_ Kestra YAML flows.
+- **Prompt-tunning:** Using a _cached_ OpenAI prompt tuned with _fewshot_ techniques to leverage latest Kestra features and increase accuracy.
+- **Context Metadata:** Allows users to define metadata such as table schemas, data definitions, and credentials.
+- **Interactive Terminal UI**: Built with Textual framework for a modern terminal experience.
+
+## Future Enhancements
+
+- **Model fine-tuning**: 
+  - Improve model accuracy by fine-tuning OpenAI models with specific Kestra flow examples.
+  - Build a training and test set of Kestra flows from available [Blueprints](https://kestra.io/blueprints?page=1&size=200).
+  - Fine-tune an OpenAI model using the [OpenAI Fine-tuning Guide](https://platform.openai.com/docs/guides/fine-tuning).
+- **Agentic Functionality**: 
+  - Using existing Kestra YAML validation and error handling capabilities, implement a feedback loop to allow agent correct its errors.
+  - Using [Kestra API's](https://kestra.io/docs/api-reference/open-source) allow model to execute Kestra flows and handle errors.
+  - Use OpenAI's _function calling_ feature to enable the bot to call Kestra API endpoints directly.
 
 ## Prerequisites
 
@@ -42,66 +52,61 @@ cd kestra-playground
 
 2. Install dependencies:
 ```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
 3. Run the application:
 ```bash
-python test_app.py
+python main.py
 ```
 
-### PyPI Package (Future)
-
-Once published to PyPI, you can install it directly:
+4. Start the Kestra server:
 ```bash
-pip install kestra-bot-demo
-kestra-bot
+docker compose up
 ```
 
-## Usage
+## UI Usage
 
-### Keyboard Shortcuts
+#### Keyboard Shortcuts
 
-- **Tab Navigation**: `1-5` to switch between tabs
-- **Actions**: 
-  - `Ctrl+B`: Build Flow
-  - `Ctrl+A`: Add to Kestra
-  - `Ctrl+E`: Execute Flow
-- **Quit**: `Ctrl+Q`
+| Action                | Shortcut         | Description                |
+|-----------------------|-----------------|----------------------------|
+| Tab Navigation        | `1` - `5`       | Switch between tabs        |
+| Build Flow            | `Ctrl+B`        | Build Kestra flow          |
+| Add to Kestra         | `Ctrl+A`        | Add flow to Kestra         |
+| Execute Flow          | `Ctrl+E`        | Execute the current flow   |
+| Quit                  | `Ctrl+Q`        | Exit the application       |
 
-### Application Tabs
+#### Application Tabs
 
-1. **Prompt Tab**: Enter natural language descriptions of your ETL pipeline
-2. **Metadata Tab**: Define table schemas, data definitions, and credentials
-3. **Kestra Flow Tab**: View and edit generated Kestra YAML flows
-4. **Execution Logs Tab**: Monitor execution history and console logs
-5. **Settings Tab**: Configure OpenAI model and developer prompts
+| Tab                | Description                                               |
+|--------------------|----------------------------------------------------------|
+| **Prompt**         | Enter natural language descriptions of your ETL pipeline |
+| **Metadata**       | Define table schemas, data definitions, and credentials  |
+| **Kestra Flow**    | View and edit generated Kestra YAML flows                |
+| **Execution Logs** | Monitor execution history and console logs               |
+| **Settings**       | Configure OpenAI model and developer prompts             |
 
 ## Architecture
 
-The application is built using the Textual framework with the following structure:
+The Kestra Bot follows a modular architecture with clear separation of concerns:
 
-- `KestralBotApp`: Main application class
-- `KestralBotHeader`: Custom header widget
-- `StatusBar`: Reactive status updates
-- Tab classes for each functional area
-- Tokyo Night color scheme implementation
+#### Core Components
 
-## Development
+- **Terminal UI Layer** (`app.py`): Built with the Textual framework, provides an interactive terminal interface with multiple tabs for user interaction
+- **AI Agent Layer** (`openai_client.py`): Handles communication with OpenAI's reasoning models to generate Kestra flows from natural language prompts
+- **Configuration Layer** (`settings.py`): Manages application settings and environment variables using Pydantic for validation
 
-### Adding New Features
+### Data Flow
 
-1. **Event Handlers**: All UI interactions have placeholder event handlers ready for implementation
-2. **Async Operations**: Status bar and logging are designed for async operations
-3. **Extensible Tabs**: Easy to add new tabs or modify existing ones
-
-### Project Structure
-
-```
-kestrabot/
-├── __init__.py          # Package initialization
-├── app.py               # Main application code
-```
+1. **User Input**: Natural language descriptions entered in the Prompt tab
+2. **Context Enhancement**: Metadata (schemas, credentials) from the Metadata tab enriches the prompt
+3. **AI Processing**: OpenAI client sends enhanced prompts to reasoning models with cached few-shot examples
+4. **Flow Generation**: Generated Kestra YAML flows are displayed in the Kestra Flow tab
+5. **Execution**: Flows can be added to Kestra server and executed with logs displayed in Execution Logs tab
 
 ## Contributing
 
@@ -118,65 +123,3 @@ MIT License
 ## Author
 
 Parham Parvizi (parham.parvizi@gmail.com)
-
----
-
-## Original Project Notes
-
-# Kestra Playground Project
-
-# Kestra Developer Prompt
-
-# OpenAI Saved Prompt
-
-`pmpt_686d454e7bac8195a2de39f100a5a7ce08de1409dc42761e`
-
-```python
-from openai import OpenAI
-client = OpenAI()
-
-response = client.responses.create(
-  prompt={
-    "id": "pmpt_686d454e7bac8195a2de39f100a5a7ce08de1409dc42761e",
-    "version": "3"
-  }
-)
-```
-
-
-
-Let's develop a python pypi textual terminal application skeleton. Add a python module called `app.py` under the `kestrabot` package.
-
-This will build an empty textual skeleton application. I want to do all the widgets, layouts, buttons, and styles. I will add the functionality behind it later. I do want a placeholder for all the events fired by the UI interactions (ie: menu button clicks).
-
-Build the following textual layout:
-- The app would start in full screen more.
-- Use the textual "tokyo-night" color theme.
-- A header with larger title text: "Kestra Bot Demo". subtitle: "An OpenAI agent for building Kestra ETL Flows". Adding auther info: "Parham (parham.parvizi@gmail.com)"
-- Majority of the screen taken by a set of tabs described in detail below. The user can switch between these tabs.
-- An status label right above the footer below (taking only a single line). Showing the background status of running tasks by the app. When I develop the main functionality later, I like to be able to change this status label easily async. 
-- A footer that has keyboard shortcuts to switch to each tab below. AND commands for: "Build Flow", "Add to Kestra", and "Execute Flow"
-
-Tabs:
-----
-tab 1: 
-title: Prompt
-This tab would allow the user to describe an ETL pipeline (in human language) in a TextArea. The text area should be accept and format (color formatting) markdown syntax input. 
-The text area can have a placeholder text: "Describe what you like me to do like a human!"
-
-tab 2:
-Title: Metadata
-This tab will also have a TextArea (formatted in markdown) that would allow the user to define additional metadata information for their ETL jobs like table schema, data definitions, source and target user/pass.
-
-tab 3:
-title: Kestra Flow
-This tab will show the generated Kestra Flow YAML definition by the tool. The generated YAML file should be also editable via a TextArea and in YAML syntax highlighting.
-
-tab 4:
-title: Execution Logs
-This tab will show execution logs and console logs. The top of this section should include textual Collapsible elements containing Labels. I should be able to easily add a collapsible section for each time the app executes and generates a new Kestra Flow. 
-The bottom part of this tab, should include an scrollable textual Log element. This element will show logs in my app. I should be able to easily post log message to this section as my app runs (similar to console logs).
-
-tab 5:
-title: Settings
-Includes app settings. A TextArea showing the developer prompt used with OpenAI. Selection items with two OpenAI models: "o4-mini" and "gpt-4.1"
