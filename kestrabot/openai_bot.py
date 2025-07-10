@@ -25,7 +25,7 @@ KESTRABOT_OPENAI_API_KEY = os.getenv("KESTRABOT_OPENAI_API_KEY", None)
 
 # Constants
 KESTRA_PROMPT_ID = "pmpt_686e75a5f28c8193b1100b441bcdca320f2c2115eba99734"
-KESTRA_PROMPT_VERSION = "1"
+KESTRA_PROMPT_VERSION = "7"
 
 
 class KestraBotFlowResponse(BaseModel):
@@ -143,6 +143,7 @@ class KestraBotOpenAIClient:
                     "summary": "auto",
                 },
                 store=False,
+                tools=[{"type": "web_search_preview", "search_context_size": "medium",}],
             )
             
             # Calculate execution time

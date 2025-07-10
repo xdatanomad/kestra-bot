@@ -1,16 +1,22 @@
-- Fetch users from API:  
-  "GET `https://gorest.co.in/public/v2/users`."
-- Convert JSON → Ion:  
-  "Transform that JSON into Ion format (no new-line splitting)."
-- Convert Ion → JSON:  
-  "Serialize the Ion back into line-delimited JSON."
-- Enrich each record:  
-  "Run a Jython script on each row to log it and add `inserted_at = current UTC timestamp`."
-- Fan out two branches in parallel:
-  - Postgres branch:
-    1. Convert enriched Ion to CSV with header.
-    2. CREATE TABLE IF NOT EXISTS `public.raw_users` (id, name, email, gender, status, inserted_at).
-    3. COPY IN the CSV into Postgres `public.raw_users` via JDBC.
-  - S3 branch:
-    1. Convert enriched Ion to JSON lines.
-    2. Upload `users.json` to S3 bucket `kestraio` using AWS creds from secrets.
+### Example 1
+
+- HTTP GET `https://gorest.co.in/public/v2/users`
+- fields are: id, name, email, gender, status
+- Enrich the records to add:
+  - inserted_at = current UTC timestamp.
+  - status = "active" if gender is female.
+  - status = "inactive" if gender is male.
+  - source = "gorest".
+- Write to CSV file using pandas.
+- CREATE TABLE IF NOT EXISTS `public.raw_users`.
+- Copy the CSV file into the `public.raw_users` table using the `COPY` command.
+
+
+### Example 2
+- using python faker package, generate 100 fake users with the following fields:
+  - id
+  - name
+  - email
+- write them into a csv file using pandas
+- create a new postgres table called `public.fake_users` with the same fields
+- copy the csv file into the `public.fake_users` table using the `COPY` command
