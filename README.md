@@ -51,10 +51,15 @@ export KESTRABOT_OPENAI_API_KEY="your_openai_api_key_here"
 ```bash
 git clone https://github.com/xdatanomad/kestra-bot.git
 cd kestra-bot
+
+# install deps
 python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
+
+# setup data dir for kestra docker compose
+python ./setup.py
 ```
 
 2. Start the Kestra server:
@@ -73,7 +78,7 @@ python main.py
 
 #### Keyboard Shortcuts
 
-| Action                | Shortcut         | Description                |
+| Action                | Shortcut         | Description               |
 |-----------------------|-----------------|----------------------------|
 | Tab Navigation        | `1` - `5`       | Switch between tabs        |
 | Build Flow            | `Ctrl+B`        | Build Kestra flow          |
@@ -83,7 +88,7 @@ python main.py
 
 #### Application Tabs
 
-| Tab                | Description                                               |
+| Tab                | Description                                              |
 |--------------------|----------------------------------------------------------|
 | **Prompt**         | Enter natural language descriptions of your ETL pipeline |
 | **Metadata**       | Define table schemas, data definitions, and credentials  |
