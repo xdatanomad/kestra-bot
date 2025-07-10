@@ -320,6 +320,7 @@ class KestraBotApp(App):
         # Set initial status
         status_bar = self.query_one(StatusBar)
         asyncio.create_task(status_bar.update_status("Application started"))
+
     
     async def action_switch_tab(self, tab_id: str) -> None:
         """Switch to a specific tab."""
@@ -386,6 +387,10 @@ class KestraBotApp(App):
     async def _build_flow(self, prompt: str, metadata: Optional[str] = None) -> str:
         client: KestraBotOpenAIClient = get_kestrabot_client()
         try:
+            # switch to logs tab
+            await asyncio.sleep(0.25)
+            await self.switch_tab("logs")
+
             # Run the blocking generate_kestra_flow in a thread
             response: KestraBotFlowResponse = await asyncio.to_thread(
                 client.generate_kestra_flow,
@@ -395,7 +400,22 @@ class KestraBotApp(App):
             if response.output:
                 flow_textarea = self.query_one("#flow-textarea", TextArea)
                 flow_textarea.text = response.output
+
+                # sleep for a moement
+                await asyncio.sleep(1.0)
+                # set status
                 set_status("Flow generated successfully")
+                # add execution log
+                resp_id = str(response.id)
+                exec_log_content = (
+                    f"Completed. Time: {response.execution_time:.2f}s",
+                    f"Input tokens: {response.input_tokens}, Output tokens: {response.output_tokens}, Total tokens: {response.total_tokens}",
+                    f"Model: {response.model}",
+                )
+                exec_log_content = "\n".join(exec_log_content)
+                await self.add_execution_log(resp_id, exec_log_content)
+                await self.switch_tab("flow")
+
                 return response.output
             else:
                 raise ValueError("No output generated from the flow")
@@ -412,6 +432,17 @@ class KestraBotApp(App):
         """Set the status message in the application."""
         status_bar = self.query_one(StatusBar)
         await status_bar.update_status(message)
+
+    async def switch_tab(self, tab_id: str) -> None:
+        """Switch to a specific tab."""
+        main_tabs = self.query_one("#main-tabs", TabbedContent)
+        # await main_tabs.action_toggle(tab_id)
+        main_tabs.active = tab_id
+
+    async def add_execution_log(self, execution_id: str, content: str) -> None:
+        """Add a new execution log entry."""
+        logs_tab = self.query_one("#logs", ExecutionLogsTab)
+        logs_tab.add_execution_log(execution_id, content)
 
 
 app: Optional[KestraBotApp] = None
