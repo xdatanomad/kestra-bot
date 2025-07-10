@@ -111,6 +111,7 @@ class KestraBotOpenAIClient:
             ... )
             >>> print(response.output)
         """
+        # Validate user input
         if not user_input or not user_input.strip():
             raise ValueError("User input cannot be empty")
         
@@ -126,24 +127,39 @@ class KestraBotOpenAIClient:
                 f"{metadata}\n"
                 "</metadata>"
             )
+
+        # Validate the developer prompt
+        if not settings.developer_prompt or not settings.developer_prompt.strip():
+            raise ValueError("Developer prompt is not set. Please configure it in settings. You can see the latest version under prompts/developer_prompt_v2.md")
+        
+        # Set the OpenAI model
+        model = settings.openai_model or "o4-mini"
         
         try:
             logging.info(f"Generating Kestra flow for user input:\n{user_input[:100]}\n...")
             start_time = time.time()
             
             # Make the API call to OpenAI responses endpoint
+            # response = self.client.responses.create(
+            #     prompt={
+            #         "id": KESTRA_PROMPT_ID,
+            #         "version": KESTRA_PROMPT_VERSION
+            #     },
+            #     input=input_data,
+            #     reasoning={
+            #         "effort": "medium",
+            #         "summary": "auto",
+            #     },
+            #     store=False,
+            #     tools=[{"type": "web_search_preview", "search_context_size": "medium",}],
+            # )
             response = self.client.responses.create(
-                prompt={
-                    "id": KESTRA_PROMPT_ID,
-                    "version": KESTRA_PROMPT_VERSION
-                },
+                model=model,
+                instructions=settings.developer_prompt,
                 input=input_data,
-                reasoning={
-                    "effort": "medium",
-                    "summary": "auto",
-                },
-                store=False,
-                tools=[{"type": "web_search_preview", "search_context_size": "medium",}],
+                reasoning={"effort": "medium", "summary": "auto"} if model.startswith("o4-") else None,
+                tools=[{"type": "web_search_preview", "search_context_size": "medium"}],
+                store=True,
             )
             
             # Calculate execution time
@@ -185,7 +201,64 @@ class KestraBotOpenAIClient:
                 model=model,
                 execution_time=execution_time
             )
-                
+            # interested__events = {
+            #     'response.created',
+            #     'response.reasoning_summary_text.done',
+            #     'response.completed',
+            # }
+            # for event in response:
+            #     if event.type in interested__events:
+            #         if event.type == 'response.created':
+            #             logging.info(f"Working on the response...")
+            #         elif event.type == 'response.reasoning_summary_text.done':
+            #             # output reasoning summary text
+            #             if hasattr(event, 'text'):
+            #                 logging.info(f"Reasoning...\n {str(getattr(event, 'text', ''))}")
+            #         elif event.type == 'response.completed':
+            #             # default values
+            #             output_text = ""
+            #             input_tokens = 0
+            #             output_tokens = 0
+            #             total_tokens = 0
+            #             # get response ID
+            #             resp_id = event.response.id
+            #             # get output text content from the response
+            #             for item in event.response.output:
+            #                 if hasattr(item, 'content') and getattr(item, 'content'):
+            #                     # Assuming content is a list of items, we take the first one
+            #                     first_content = getattr(item, 'content', [])[0]
+            #                     if hasattr(first_content, 'text'):
+            #                         output_text = first_content.text
+            #             # Extract token usage information safely
+            #             if hasattr(event, 'usage'):
+            #                 input_tokens = getattr(getattr(event, 'usage', None), 'input_tokens', 0)
+            #                 output_tokens = getattr(getattr(event, 'usage', None), 'output_tokens', 0)
+            #                 total_tokens = getattr(getattr(event, 'usage', None), 'total_tokens', 0)
+            #             # Extract model information safely
+            #             model = getattr(event, 'model', 'unknown')
+                        
+            #             if not output_text:
+            #                 raise Exception("Could not extract output text content from OpenAI response")
+            #             # Validate and cleanup response into valid Kestra YAML
+            #             output_text = self.validate_response_yaml(output_text)
+
+            #             logging.info(f"Token usage - Input: {input_tokens}, Output: {output_tokens}, Total: {total_tokens}")
+            #             logging.info(f"Execution time: {execution_time:.2f} seconds")
+            #             logging.info("Kestra flow generated successfully")
+                        
+            #             return KestraBotFlowResponse(
+            #                 id=resp_id,
+            #                 type="completed",
+            #                 input=user_input,
+            #                 output=output_text,
+            #                 metadata=(metadata or ""),
+            #                 input_tokens=input_tokens,
+            #                 output_tokens=output_tokens,
+            #                 total_tokens=total_tokens,
+            #                 model=model,
+            #                 execution_time=execution_time
+            #             )
+            # raise Exception("No completed event received from OpenAI response stream")
         except Exception as e:
             logging.error(f"Error generating Kestra flow: {str(e)}")
             raise Exception(f"Failed to generate Kestra flow: {str(e)}")
