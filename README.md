@@ -47,18 +47,19 @@ export KESTRABOT_OPENAI_API_KEY="your_openai_api_key_here"
 
 ### Development Setup
 
-1. Clone the repository:
+1. Install dependencies:
 ```bash
-git clone <repository-url>
-cd kestra-playground
-```
-
-2. Install dependencies:
-```bash
+git clone https://github.com/xdatanomad/kestra-bot.git
+cd kestra-bot
 python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
+```
+
+2. Start the Kestra server:
+```bash
+docker compose up
 ```
 
 3. Run the application:
@@ -66,10 +67,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-4. Start the Kestra server:
-```bash
-docker compose up
-```
+
 
 ## UI Usage
 
