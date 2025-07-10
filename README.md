@@ -2,6 +2,9 @@
 
 A Textual terminal application for building Kestra ETL Flows using OpenAI agents.
 
+![Kestra-bot Prompt](./imgs/tab_prompt.png)
+![Kestra-bot Flow](./imgs/tab_flow.png)
+
 ## Features
 
 - **OpenAI Agents:** Utilizes OpenAI's _reasoning_ models to generate Kestra flows from natural language descriptions.
@@ -107,6 +110,8 @@ The Kestra Bot follows a modular architecture with clear separation of concerns:
 3. **AI Processing**: OpenAI client sends enhanced prompts to reasoning models with cached few-shot examples
 4. **Flow Generation**: Generated Kestra YAML flows are displayed in the Kestra Flow tab
 5. **Execution**: Flows can be added to Kestra server and executed with logs displayed in Execution Logs tab
+
+![Kestra-bot Settings](./imgs/tab_settings.png)
 
 ## Contributing
 
