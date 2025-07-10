@@ -4,11 +4,13 @@ A Textual terminal application for building Kestra ETL Flows using OpenAI agents
 
 ## Features
 
-- **OpenAI Agents:** Utilizes OpenAI's _reasoning_ models to generate Kestra flows from natural language descriptions.
-- **Kestra Flow Generation:** Automatically generates and _validates_ Kestra YAML flows.
-- **Prompt-tunning:** Using a _cached_ OpenAI prompt tuned with _fewshot_ techniques to leverage latest Kestra features and increase accuracy.
-- **Context Metadata:** Allows users to define metadata such as table schemas, data definitions, and credentials.
-- **Interactive Terminal UI**: Built with Textual framework for a modern terminal experience.
+| Feature                    | Description                                                                                                 |
+|----------------------------|-------------------------------------------------------------------------------------------------------------|
+| **OpenAI Agents**          | Utilizes OpenAI's _reasoning_ models to generate Kestra flows from natural language descriptions.           |
+| **Kestra Flow Generation** | Automatically generates and _validates_ Kestra YAML flows.                                                  |
+| **Prompt-tuning**          | Uses a _cached_ OpenAI prompt tuned with _few-shot_ techniques to leverage the latest Kestra features and increase accuracy. |
+| **Context Metadata**       | Allows users to define metadata such as table schemas, data definitions, and credentials.                   |
+| **Interactive Terminal UI**| Built with the Textual framework for a modern terminal experience.                                          |
 
 ## Future Enhancements
 
